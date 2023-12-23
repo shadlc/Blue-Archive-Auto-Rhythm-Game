@@ -11,10 +11,10 @@
 **这是一个基于Python的蔚蓝档案音游实时识别并自动操作的小程序，适用于WSA，即[适用于Android™️ 的Windows 子系统](https://learn.microsoft.com/zh-cn/windows/android/wsa/)，不想基于其他第三方模拟器(∠·ω< )⌒☆**
 
 ## ✨ 主要功能
-**在蔚蓝档案的音游中实时读谱，自动执行，实现Full Combo，初音联动音未来可期**
+**在蔚蓝档案的音游中实时读谱，自动执行，实现Full Combo，初音联动音游未来可期**
 
 ## 📸 演示视频
-**~~待补充~~**
+**[Bilibili](https://www.bilibili.com/video/BV1SC4y1M77F)**
 
 ## 📝 使用指南
 - 为了保证每个音符的分离与丝滑，需要设置音符速度最快(7倍)、最小
