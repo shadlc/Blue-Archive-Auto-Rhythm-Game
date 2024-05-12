@@ -9,10 +9,11 @@ from PIL import Image
 from collections import deque
 from pygetwindow import Win32Window
 
+
 # 本项目的核心类
 class Clicker():
 
-    def __init__(self, window: Win32Window=None) -> None:
+    def __init__(self, window: Win32Window) -> None:
         """初始化点击器
 
         Args:
@@ -21,25 +22,54 @@ class Clicker():
         self.window_size = [self.height, self.width] = [0, 0]
         self.left = self.right = self.top = self.bottom = 0
         self.window = window
-        if window:
-            self.window_size = window.size
-            self.height = window.size[1]
-            self.width = window.size[0]
-            self.left = window.left if window.left > 0 else 0
-            self.right = window.right if window.right > 0 else 0
-            self.top = window.top if window.top > 0 else 0
-            self.bottom = window.bottom if window.bottom > 0 else 0
+        self.window_size = window.size
+        self.height = window.size[1]
+        self.width = window.size[0]
+        self.left = window.left if window.left > 0 else 0
+        self.right = window.right if window.right > 0 else 0
+        self.top = window.top if window.top > 0 else 0
+        self.bottom = window.bottom if window.bottom > 0 else 0
         
         self.press_count = 0
-        self.tolerance = 20                                                 # 颜色识别容差
+        self.tolerance = 10                                                 # 颜色识别容差
         self.frame_time = 0.019                                             # 每帧时长
 
         # 左侧点击按钮颜色列表
-        self.left_colors = [[22, 40, 67], [26, 79, 91], [33, 99, 111], [40, 125, 130], [44, 144, 144], [51, 164, 160], [60, 196, 186]]
+        self.left_colors = [
+            [9, 30, 61], [12, 41, 70], [14, 53, 79],
+            [15, 38, 67],[16, 46, 71],
+            [21, 70, 87], [22, 40, 67], [25, 89, 98],
+            [26, 79, 91], [30, 58, 82],
+            [33, 99, 111], [36, 112, 122], [40, 125, 130],
+            [45, 156, 150], [44, 144, 144], [51, 164, 160],
+            [51, 177, 166],
+            [54, 186, 174], [57, 186, 186], [58, 200, 190],
+            [59, 204, 193], [60, 196, 186], [64, 214, 198],
+        ]
         # 右侧点击按钮颜色列表
-        self.right_colors = [[63, 40, 34], [89, 65, 30], [105, 81, 31], [129, 103, 28], [160, 134, 15], [175, 148, 13], [225, 190, 8]]
+        self.right_colors = [
+            [58, 42, 36], [55, 32, 35], [61, 41, 41], [62, 48, 42],
+            [72, 52, 35], [73, 60, 41], [63, 40, 34], [89, 65, 30], [89, 52, 19],
+            [83, 65, 46], [105, 81, 31], [111, 89, 36],
+            [119, 99, 36], [129, 103, 28], [140, 116, 31],
+            [152, 125, 18], [162, 132, 26],
+            [160, 134, 15], [172, 137, 22], [174, 144, 31],
+            [175, 148, 13], [181, 144, 23], [186, 151, 33],
+            [190, 162, 23], [201, 166, 21], [202, 167, 33],
+            [208, 172, 10], [211, 171, 25], [213, 179, 18], [217, 181, 32],
+            [225, 190, 8], [226, 190, 18], [226, 190, 12], [226, 191, 39],
+            [226, 190, 28], [231, 200, 27], [235, 199, 15],
+            [235, 199, 6], [236, 196, 24],
+        ]
         # 两侧按钮颜色列表
-        self.both_colors = [[202,109,214], [179, 95, 198], [150, 78, 169], [116, 58, 141], [101, 52, 115], [79, 35, 116], [58, 28, 90]]
+        self.both_colors = [
+            [204, 119, 214], [202,109,214],
+            [196, 105, 207], [179, 95, 198], [171, 95, 190],
+            [150, 78, 169], [127, 67, 143], [133, 71, 152],
+            [111, 65, 135], [116, 58, 141], [101, 52, 115], [106, 55, 133],
+            [93, 47, 132], [79, 35, 116], [66, 29, 113], [61, 33, 110],
+            [85, 51, 115], [60, 37, 92], [58, 28, 90], [52, 33, 87],
+        ]
         self.click_color = [0, 0, 0]                                        # 点击监测点颜色
         self.slide_color = [0, 0, 0]                                        # 上划监测点颜色
         self.press_color = [0, 0, 0]                                        # 长按监测点颜色
@@ -62,6 +92,25 @@ class Clicker():
         因为是按比例获取, 因此理论上与分辨率无关
 
         """        
+        self.left_point = [
+            int(self.left + self.width*0.3),
+            int(self.top + self.height*0.5),
+        ]
+        self.right_point = [
+            int(self.left + self.width*0.7),
+            int(self.top + self.height*0.5),
+        ]
+        self.pat_point = [
+            int(self.left + self.width*0.3),
+            int(self.top + self.height*0.4),
+        ]
+
+    def initSummerPoint(self):
+        """
+        初始化夏日音游的检测点
+        因为是按比例获取, 因此理论上与分辨率无关
+
+        """        
         self.click_detect_point = [
             int(self.left + self.width*0.80),
             int(self.top + self.height*0.28),
@@ -74,17 +123,24 @@ class Clicker():
             int(self.left + self.width*0.85),
             int(self.top + self.height*0.26),
         ]
-        self.left_point = [
-            int(self.left + self.width*0.3),
-            int(self.top + self.height*0.5),
+
+    def initMikuPoint(self):
+        """
+        初始化初音音游的检测点
+        因为是按比例获取, 因此理论上与分辨率无关
+
+        """       
+        self.click_detect_point = [
+            int(self.left + self.width*0.79),
+            int(self.top + self.height*0.45),
         ]
-        self.right_point = [
-            int(self.left + self.width*0.7),
-            int(self.top + self.height*0.5),
+        self.slide_detect_point = [
+            int(self.left + self.width*0.80),
+            int(self.top + self.height*0.392),
         ]
-        self.pat_point = [
-            int(self.left + self.width*0.3),
-            int(self.top + self.height*0.4),
+        self.press_detect_point = [
+            int(self.left + self.width*0.85),
+            int(self.top + self.height*0.45),
         ]
 
     def isSizeFit(self) -> bool:
@@ -262,7 +318,9 @@ class Clicker():
         clicker.pixelRecord()
         if self.colorLike(self.click_color, self.left_colors):
             self.action_position = "left"
-            if self.past_action[-1][1] in ["press", "pressing", "needPullUp"]:
+            if self.past_action[-1][1] in ["press", "pressing", "needPullUp"] \
+               and (self.past_action[-2][0] == self.action_position
+                  or self.past_action[-2][0] == None):
                 self.action_type = "pressing"
             elif self.colorLike(self.slide_color, self.left_colors):
                 self.action_type = "slide"
@@ -273,7 +331,9 @@ class Clicker():
 
         elif self.colorLike(self.click_color, self.right_colors):
             self.action_position = "right"
-            if self.past_action[-1][1] in ["press", "pressing", "needPullUp"]:
+            if self.past_action[-1][1] in ["press", "pressing", "needPullUp"] \
+               and (self.past_action[-2][0] == self.action_position
+                  or self.past_action[-2][0] == None):
                 self.action_type = "pressing"
             elif self.colorLike(self.slide_color, self.right_colors):
                 self.action_type = "slide"
@@ -284,7 +344,9 @@ class Clicker():
 
         elif self.colorLike(self.click_color, self.both_colors):
             self.action_position = "both"
-            if self.past_action[-1][1] in ["press", "pressing", "needPullUp"]:
+            if self.past_action[-1][1] in ["press", "pressing", "needPullUp"] \
+               and (self.past_action[-2][0] == self.action_position
+                  or self.past_action[-2][0] == None):
                 self.action_type = "pressing"
             elif self.colorLike(self.slide_color, self.both_colors):
                 self.action_type = "slide"
@@ -302,6 +364,13 @@ class Clicker():
                 self.action_type = None
             self.past_action.append([self.action_position, self.action_type])
             return True
+
+        if self.past_action[-1][1] in ["pressing", "needPullUp"] \
+            and self.past_action[-2][0] != self.action_position \
+            and self.past_action[-2][0] != None:
+                # 如果过快进入下一个操作，那么在此把来不及抬起的操作直接执行
+                delayer.run(clicker.pullUp)
+                time.sleep(self.frame_time)
 
         if self.past_action[-1][1] not in ["pressing", "needPullUp"] and [self.action_position, self.action_type] in self.past_action:
             # 如果不是持续按的情况下某个动作出现多次，则不执行
@@ -353,23 +422,29 @@ if __name__ == "__main__":
     if len(windows):
         clicker = Clicker(windows[0])
         # 修改此处适配不同速度，建议速度7，防止判定点连在一起
+        # 夏日音游速度7
         delay = 0.62
+        # 初音音游速度7
+        delay = 0.58
         delayer = Delayer(delay)
         print("蔚蓝档案窗口大小:", clicker.width, clicker.height)
         print(f"当前点击延迟: {delay} 秒")
         if not clicker.isSizeFit():
             print("当前窗口大小可能不适配, 请调整为16:9的分辨率")
 
+        clicker.initMikuPoint()
+
         # 测试点的位置准确性
-        # clicker.press(clicker.pat_point)
-        # clicker.click(clicker.click_detect_point)
-        # tc.sleep(clicker.frame_time*3)
-        # clicker.click(clicker.press_detect_point)
+        # clicker.press(clicker.click_detect_point)
+        # tc.sleep(clicker.frame_time*10)
+        # clicker.press(clicker.press_detect_point)
+        # tc.sleep(clicker.frame_time*10)
+        # clicker.press(clicker.slide_detect_point)
 
         while True:
             print(clicker.past_action[-1], round(time.time(), 2))
             # 检测缺少的颜色并添加时取消注释
-            # print(clicker.click_color)
+            # print(clicker.click_color, clicker.slide_color)
             if not clicker.detectAction(): ...
             elif clicker.action_position != None and clicker.action_type == "pressing":
                 print(f"继续按 {round(time.time(), 2)}")

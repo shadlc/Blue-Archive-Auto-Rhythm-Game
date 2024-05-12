@@ -1,7 +1,10 @@
 {
     "cSpell.words": [
+        "bgra",
+        "BGRX",
         "frombytes",
         "getpixel",
+        "miku",
         "pyautogui",
         "pygetwindow",
         "touchcontrol"
